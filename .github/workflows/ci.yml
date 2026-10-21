@@ -1,0 +1,88 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [production]
+  push:
+    branches: [production]
+  workflow_call:
+    secrets:
+      CODECOV_TOKEN:
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run build
+
+  test:
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['22', '24']
+        os: [ubuntu-latest]
+        include:
+          - node: '24'
+            os: windows-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - run: npm ci
+      - run: npm test
+
+      - name: Upload coverage to Codecov
+        if: matrix.os == 'ubuntu-latest' && matrix.node == '24'
+        run: npm run test:coverage
+      - uses: codecov/codecov-action@v7
+        if: matrix.os == 'ubuntu-latest' && matrix.node == '24'
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: ./coverage
+          fail_ci_if_error: false
+
+  legacy-smoke:
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['14', '18']
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+
+      - name: Troca para o Node da matriz
+        uses: actions/setup-node@v5
+        with:
+          node-version: ${{ matrix.node }}
+
+      - run: node scripts/smoke-legacy.cjs
+      - run: node scripts/smoke-legacy.mjs

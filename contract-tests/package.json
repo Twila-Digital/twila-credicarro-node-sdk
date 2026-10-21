@@ -1,0 +1,13 @@
+{
+  "name": "@twila/credicarro-contract-tests",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Testes de contrato contra o openapi.yaml público da documentação do Credicarro (o swagger de staging exige autenticação). Não roda a cada PR — só agendado e no pipeline de release (ver contract-tests.yml).",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "js-yaml": "^4.1.0"
+  }
+}

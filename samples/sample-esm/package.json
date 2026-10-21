@@ -1,0 +1,13 @@
+{
+  "name": "sample-esm",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Sample em ES Modules (import), valida o build .mjs do pacote.",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@twila/credicarro": "file:../.."
+  }
+}

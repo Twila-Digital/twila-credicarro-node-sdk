@@ -8,6 +8,7 @@
 //  - o header Idempotency-Key identifica a notificação ({id_mensagem}:{id_webhook}): use-o para deduplicar;
 //  - nada de dados do evento em log: só o id da proposta e o tipo do erro.
 const express = require('express');
+const { rateLimit } = require('express-rate-limit');
 const {
   CredicarroWebhookSignatureError,
   getPendingActions,
@@ -66,7 +67,11 @@ function enqueue(event) {
 
 const app = express();
 
-app.post('/webhooks/credicarro', express.raw({ type: '*/*', limit: '1mb' }), async (req, res) => {
+// Limita as tentativas por IP antes de validar Authorization e assinatura (força bruta e flood de corpos de 1 MiB).
+// Dimensione pelo volume de propostas: a Credicarro entrega cada mudança de status em uma requisição.
+const webhookLimiter = rateLimit({ windowMs: 60_000, limit: 600, standardHeaders: 'draft-7', legacyHeaders: false });
+
+app.post('/webhooks/credicarro', webhookLimiter, express.raw({ type: '*/*', limit: '1mb' }), async (req, res) => {
   const raw = req.body;
   if (!Buffer.isBuffer(raw)) {
     res.sendStatus(401); // POST sem corpo

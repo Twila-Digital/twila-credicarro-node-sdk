@@ -84,7 +84,6 @@ export class ResiliencePipeline {
   private buildRetryPolicy(retrySafe: boolean, deadline: number) {
     const remainingMs = () => Math.max(0, deadline - Date.now());
 
-    // `Retry-After` maior que o orçamento restante: não espera, devolve a resposta (vira `CredicarroRateLimitError`).
     const shouldRetry = (response: ApiResponse): boolean => {
       if (!retrySafe || !isTransientResponse(response, this.options)) return false;
 

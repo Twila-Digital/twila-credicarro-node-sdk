@@ -2,7 +2,6 @@ import { http, HttpResponse } from 'msw';
 import type { setupServer } from 'msw/node';
 import { CredicarroClient, type CredicarroResilienceOptions } from '../src';
 
-// Sem "/" final de propósito — regressão do bug de resolução de URI relativa (RFC 3986 §5.3).
 export const BASE_URL = 'http://localhost/integration';
 
 export const CLIENT_ID = 'client-id-de-teste';

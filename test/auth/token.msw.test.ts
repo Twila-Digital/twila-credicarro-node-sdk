@@ -54,7 +54,6 @@ describe('authentication (MSW)', () => {
     server.use(
       http.post(`${BASE_URL}/v1/authentication/accesstoken`, () => {
         tokenCalls += 1;
-        // expira_em no passado: o próximo uso precisa renovar.
         return HttpResponse.json({ ...tokenResponse(`token-${tokenCalls}`), expira_em: new Date(Date.now() - 1000).toISOString() });
       }),
       http.get(proposalPath, () => HttpResponse.json(proposalBody)),

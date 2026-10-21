@@ -1,7 +1,5 @@
 import { enumFromWireValue } from '../internal/util/enumMapping';
 
-// Todos os enums têm o fallback `Unknown = -1`, e os tipos públicos guardam também o valor bruto recebido.
-
 export enum ProposalStatus {
   Analysing = 1,
   Approved = 2,

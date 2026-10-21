@@ -188,7 +188,6 @@ describe('responses mask personal data in util.inspect only; JSON carries the re
     expect(shown).not.toContain('123.456.789-01');
     expect(shown).not.toContain('987.654.321-00');
 
-    // JSON de ida e volta (fila, cache, res.json): valores reais.
     const json = JSON.stringify(proposal);
     expect(json).toContain('123.456.789-01');
     expect(JSON.parse(json)).toEqual(JSON.parse(JSON.stringify({ ...proposal })));
@@ -350,7 +349,7 @@ describe('time budget and limits', () => {
     const provider = new AccessTokenProviderImpl({ generate: async () => ({ token_de_acesso: `t${++calls}`, expira_em_segundos: 100 }) }, () => now);
 
     await provider.getToken();
-    now = 49_000; // 100 s -> max(50 s, 40 s) = 50 s
+    now = 49_000;
     await provider.getToken();
     expect(calls).toBe(1);
     now = 51_000;

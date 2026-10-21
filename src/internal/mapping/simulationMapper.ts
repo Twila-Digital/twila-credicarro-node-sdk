@@ -48,7 +48,6 @@ export function createFinancingRequestToWire(
     valorEntrada: request.downPayment,
     uf: request.state,
     isVeiculoZeroKm: request.isZeroKm,
-    // As rotas v1 não aceitam `cnpjLoja` (corpo com propriedades extras é recusado).
     cnpjLoja: includeStore ? (request as CreateFinancingSimulationRequest).storeCnpj : undefined,
   };
 }

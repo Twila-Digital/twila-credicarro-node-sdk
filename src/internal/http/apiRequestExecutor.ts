@@ -45,7 +45,6 @@ export class ApiRequestExecutor {
       validateStatus: () => true,
       responseType: 'text',
       transformResponse: [(data: unknown) => data],
-      // Redirecionamentos desligados: um 3xx vira CredicarroApiError (o token nunca é reenviado a outro host).
       maxRedirects: 0,
       maxBodyLength: MAX_REQUEST_BYTES,
       maxContentLength: MAX_RESPONSE_BYTES,
@@ -77,13 +76,11 @@ export class ApiRequestExecutor {
     const attemptTimeoutMs = options.attemptTimeoutMs ?? this.resilienceOptions.attemptTimeoutMs;
     const retrySafe = isRetrySafe(method, path, idempotencyKey !== undefined);
 
-    // Upload de documento: orçamento = tentativa × tentativas (padrão 180 s). Demais chamadas: timeout total.
     const totalTimeoutMs =
       options.attemptTimeoutMs !== undefined
         ? Math.max(this.resilienceOptions.totalTimeoutMs, attemptTimeoutMs * this.resilienceOptions.maxRetryAttempts)
         : this.resilienceOptions.totalTimeoutMs;
 
-    // O corpo é serializado uma única vez e reaproveitado em todas as tentativas e no replay do 401.
     const payload = body === undefined ? undefined : JSON.stringify(body);
 
     return this.resilience.execute(
@@ -100,7 +97,6 @@ export class ApiRequestExecutor {
       return explicitKey;
     }
 
-    // O header é obrigatório no envio de documento; nas demais rotas a chave automática pode ser desligada.
     if (method === 'POST' && isDocumentUploadPath(path)) return randomUUID();
 
     if (this.resilienceOptions.disableAutomaticIdempotencyKey) return undefined;
@@ -121,7 +117,6 @@ export class ApiRequestExecutor {
 
     if (response.statusCode !== 401) return response;
 
-    // Renova e repete uma única vez; só descarta o cache se o token rejeitado ainda for o atual.
     this.tokenProvider.invalidate(token);
     const newToken = await this.tokenProvider.getToken();
     const retried = await this.sendOnce(method, path, payload, idempotencyKey, attemptTimeoutMs, newToken, signal);
@@ -157,7 +152,6 @@ export class ApiRequestExecutor {
         headers: raw.headers as Record<string, string>,
       };
     } catch (error) {
-      // O erro do axios carrega a requisição inteira (token e corpo); só o código da falha sai daqui.
       throw toNetworkFailure(error) ?? error;
     }
   }

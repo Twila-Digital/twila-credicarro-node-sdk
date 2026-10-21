@@ -1,6 +1,5 @@
 import { load } from 'js-yaml';
 
-// O swagger de staging do Credicarro exige autenticação (401), então o contrato vem do openapi.yaml público da documentação.
 const DEFAULT_OPENAPI_URL = 'https://documentacao.credicarro.com.br/openapi.yaml';
 
 export type Schema = {

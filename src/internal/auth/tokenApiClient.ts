@@ -29,14 +29,12 @@ export class TokenApiClientImpl implements TokenApiClient {
       validateStatus: () => true,
       responseType: 'text',
       transformResponse: [(data: unknown) => data],
-      // Sem redirecionamentos: as credenciais nunca seguem para outro host.
       maxRedirects: 0,
       maxContentLength: 1024 * 1024,
     });
   }
 
   async generate(): Promise<GenerateAccessTokenResponseWire> {
-    // Gerar token é seguro de repetir: retry habilitado.
     const response = await this.pipeline.execute(true, (signal) => this.post(signal));
 
     if (response.statusCode === 400 || response.statusCode === 401) {

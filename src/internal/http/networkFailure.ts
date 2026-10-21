@@ -5,8 +5,6 @@ import axios from 'axios';
  * O erro original do axios carrega `config` (corpo e headers, incluindo `clientSecret` e token), por isso nunca
  * é propagado: só o código da falha sobrevive.
  */
-// Códigos que não indicam instabilidade de rede (resposta grande demais, cancelamento, URL inválida): não são repetidos
-// e não contam para o circuit breaker.
 const NON_TRANSIENT_CODES = new Set([
   'ERR_BAD_RESPONSE',
   'ERR_BAD_REQUEST',

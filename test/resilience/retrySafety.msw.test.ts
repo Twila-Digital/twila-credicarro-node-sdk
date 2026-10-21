@@ -345,7 +345,7 @@ describe('retry safety and idempotency keys (MSW)', () => {
 
     expect(attempts).toBe(2);
     expect(error).toBeInstanceOf(CredicarroRateLimitError);
-    expect((error as CredicarroRateLimitError).retryAfterMs).toBeUndefined(); // Retry-After: 0 é ignorado
+    expect((error as CredicarroRateLimitError).retryAfterMs).toBeUndefined();
 
     attempts = 0;
     server.use(

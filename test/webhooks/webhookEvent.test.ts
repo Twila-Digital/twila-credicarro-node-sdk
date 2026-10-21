@@ -16,7 +16,6 @@ import {
 } from '../../src';
 import { V2_PROPOSAL_WIRE } from '../support';
 
-// Vetor da documentação (webhooks/security.mdx).
 const SECRET = 'segredo-de-exemplo';
 const TIMESTAMP = 1715792400;
 const BODY = '{"id_proposta":"bea8d060-f93d-48eb-b6c4-45f64483cdd9","enum_status":2,"status":"Approved"}';

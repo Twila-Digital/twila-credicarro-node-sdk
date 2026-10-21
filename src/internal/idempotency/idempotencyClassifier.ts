@@ -1,6 +1,3 @@
-// Rotas que recebem `Idempotency-Key` automática (UUID por chamada lógica, o mesmo em todas as tentativas).
-// `v1/customer/unified` NÃO está aqui de propósito: com a chave a rota só cria (CPF existente → 409
-// `Cpf.CpfAlreadyAdded`); sem a chave ela faz upsert. A chave nunca é gerada automaticamente nela.
 const AUTOMATIC_KEY_PATHS = new Set([
   'v1/customer',
   'v1/customer/address',
@@ -49,6 +46,5 @@ export function isRetrySafe(method: string, path: string, hasIdempotencyKey: boo
 
   if (REPLACEMENT_SEMANTICS_PATH.test(normalized)) return true;
 
-  // POST v1/webhook e POST v1/customer/unified sem chave NÃO são repetidos.
   return hasIdempotencyKey;
 }

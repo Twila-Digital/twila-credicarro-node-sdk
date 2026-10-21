@@ -27,7 +27,7 @@ describe('AccessTokenProvider', () => {
     expect(await provider.getToken()).toBe('token-1');
     expect(api.calls).toBe(1);
 
-    now += 600_000; // passou de expira_em
+    now += 600_000;
     expect(await provider.getToken()).toBe('token-2');
     expect(api.calls).toBe(2);
   });
@@ -38,11 +38,11 @@ describe('AccessTokenProvider', () => {
     const provider = new AccessTokenProviderImpl(api, () => now);
 
     await provider.getToken();
-    now += 3_539_000; // ainda dentro de 3600s - 60s
+    now += 3_539_000;
     await provider.getToken();
     expect(api.calls).toBe(1);
 
-    now += 2_000; // ultrapassou 3540s
+    now += 2_000;
     await provider.getToken();
     expect(api.calls).toBe(2);
   });

@@ -1,7 +1,5 @@
 import { inspect, type InspectOptions } from 'node:util';
 
-// Campos com dados pessoais, financeiros ou segredos. Nos objetos devolvidos pelo SDK, `util.inspect` (console.log)
-// mostra esses valores mascarados; as propriedades e o JSON continuam com os valores reais.
 const CPF_KEYS = new Set(['cpf', 'buyerCpf', 'sellerCpf', 'customerCpf', 'holderCpf']);
 const MASKED_KEYS = new Set([
   'document',

@@ -53,7 +53,6 @@ import {
 
 type Method = 'get' | 'post' | 'put' | 'delete';
 
-// Toda operação pública que o SDK chama (método HTTP + rota do openapi.yaml).
 const SDK_OPERATIONS: [Method, string][] = [
   ['post', '/v1/authentication/accesstoken'],
   ['post', '/v1/customer'],
@@ -84,7 +83,6 @@ const SDK_OPERATIONS: [Method, string][] = [
   ['delete', '/v1/webhook/{webhookId}'],
 ];
 
-// Entradas públicas completas (todos os campos opcionais preenchidos).
 const personal = {
   cpf: '12345678909',
   firstName: 'Maria',

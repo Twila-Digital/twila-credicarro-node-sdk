@@ -1,4 +1,3 @@
-// Smoke test sem framework de teste (vitest exige Node >=22.12).
 import assert from 'node:assert';
 
 import {
@@ -24,7 +23,6 @@ function assertThrows(fn, expectedType, label) {
   throw new Error(`esperava que '${label}' lançasse ${expectedType.name}, mas não lançou nada`);
 }
 
-// Constrói o client e confere que os recursos existem.
 const client = new CredicarroClient({
   clientId: 'client-id',
   clientSecret: 'client-secret',
@@ -37,7 +35,6 @@ assert.strictEqual(typeof client.proposals.uploadDocument, 'function');
 assert.strictEqual(typeof client.webhooks.create, 'function');
 assert.strictEqual(typeof client.v1.proposals.get, 'function');
 
-// Configuração inválida deve lançar o erro tipado certo.
 assertThrows(() => new CredicarroClient({ clientId: '', clientSecret: 'x' }), CredicarroConfigurationError, 'clientId vazio');
 assertThrows(
   () => new CredicarroClient({ clientId: 'a', clientSecret: 'b', baseUrl: 'http://exemplo.com.br' }),
@@ -45,13 +42,10 @@ assertThrows(
   'baseUrl sem HTTPS',
 );
 
-// Enum com valor conhecido.
 assert.strictEqual(ProposalStatus.Approved, 2);
 
-// DocumentFile.
 assert.strictEqual(DocumentFile.fromBytes(Buffer.from('abc'), 'a.pdf').base64Content, 'YWJj');
 
-// Vetor de teste da documentação (HMAC real via node:crypto, sem rede).
 const secret = 'segredo-de-exemplo';
 const timestamp = 1715792400;
 const body = '{"id_proposta":"bea8d060-f93d-48eb-b6c4-45f64483cdd9","enum_status":2,"status":"Approved"}';

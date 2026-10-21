@@ -15,7 +15,6 @@ export interface AccessTokenProvider {
 }
 
 export class AccessTokenProviderImpl implements AccessTokenProvider {
-  // Campos privados de verdade (#): o token não aparece em `util.inspect` nem em `JSON.stringify` do cliente.
   #cached: CachedToken | null = null;
   #refreshing: Promise<string> | null = null;
   readonly #tokenApiClient: TokenApiClient;

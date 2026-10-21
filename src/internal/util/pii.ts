@@ -1,4 +1,4 @@
-import { inspect } from 'node:util';
+import { inspect, type InspectOptions } from 'node:util';
 
 // Campos com dados pessoais, financeiros ou segredos. Nos objetos devolvidos pelo SDK, `util.inspect` (console.log)
 // mostra esses valores mascarados; as propriedades e o JSON continuam com os valores reais.
@@ -48,9 +48,9 @@ export function maskDeep(value: unknown): unknown {
  * Faz `util.inspect` (console.log, logs) mostrar uma cópia mascarada. `toJSON`/`JSON.stringify` NÃO são alterados: levam os
  * valores reais, porque são usados para responder e persistir (filas, cache).
  */
-export function protectPii<T extends object>(target: T): T {
+export function protectPii<T extends Record<string, unknown>>(target: T): T {
   Object.defineProperty(target, inspect.custom, {
-    value: (_depth: number, options: object) => inspect(maskDeep(target), options),
+    value: (_depth: number, options: InspectOptions) => inspect(maskDeep(target), options),
     enumerable: false,
     configurable: true,
   });

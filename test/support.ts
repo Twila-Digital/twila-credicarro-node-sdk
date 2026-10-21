@@ -32,7 +32,7 @@ export function stubToken(server: ReturnType<typeof setupServer>, token = 'token
   server.use(http.post(`${BASE_URL}/v1/authentication/accesstoken`, () => HttpResponse.json(tokenResponse(token))));
 }
 
-export function problem(status: number, tipo: string, titulo: string, detalhe = 'detalhe do erro', campo?: string) {
+export function problem(status: number, tipo: string, titulo: string, detalhe = 'detalhe do erro', campo?: string): Response {
   return HttpResponse.json({ tipo, titulo, status, detalhe, ...(campo ? { campo } : {}) }, { status });
 }
 

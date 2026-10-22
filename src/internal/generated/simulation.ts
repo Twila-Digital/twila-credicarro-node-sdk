@@ -14,6 +14,7 @@ export interface CreateFinancingSimulationRequestWire {
   valorEntrada: number;
   uf: string;
   isVeiculoZeroKm: boolean;
+  retornoComissao?: number;
   cnpjLoja?: string;
 }
 
@@ -22,6 +23,7 @@ export interface CreateRefinancingSimulationRequestWire {
   cpf: string;
   placa: string;
   valorSolicitado: number;
+  retornoComissao?: number;
   cnpjLoja?: string;
 }
 
@@ -46,6 +48,19 @@ export interface SimulationOptionWire {
 
 export interface SimulationListResponseWire {
   simulacoes: SimulationOptionWire[];
+}
+
+export interface CommissionReturnWire {
+  tipo: 'Financing' | 'Refinancing';
+  alvo: 'Store' | 'Organization';
+  retorno_minimo: number;
+  retorno_maximo: number;
+  permite_taxa_padrao: boolean;
+}
+
+/** Corpo de `GET v2/proposal/simulation/commission-returns`. */
+export interface ListCommissionReturnsResponseWire {
+  retornos_comissao: CommissionReturnWire[];
 }
 
 export interface SimulationWire {

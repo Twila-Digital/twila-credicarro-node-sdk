@@ -1,4 +1,5 @@
 import type {
+  CommissionReturnWire,
   CreateFinancingSimulationRequestWire,
   CreateRefinancingSimulationRequestWire,
   RangeFinancingResponseWire,
@@ -8,6 +9,7 @@ import type {
   VehicleWire,
 } from '../generated/simulation';
 import type {
+  CommissionReturn,
   CreateFinancingSimulationRequest,
   CreateFinancingSimulationRequestV1,
   CreateRefinancingSimulationRequest,
@@ -48,6 +50,7 @@ export function createFinancingRequestToWire(
     valorEntrada: request.downPayment,
     uf: request.state,
     isVeiculoZeroKm: request.isZeroKm,
+    retornoComissao: includeStore ? (request as CreateFinancingSimulationRequest).commissionReturn : undefined,
     cnpjLoja: includeStore ? (request as CreateFinancingSimulationRequest).storeCnpj : undefined,
   };
 }
@@ -60,7 +63,18 @@ export function createRefinancingRequestToWire(
     cpf: request.cpf,
     placa: request.licensePlate,
     valorSolicitado: request.requestedAmount,
+    retornoComissao: includeStore ? (request as CreateRefinancingSimulationRequest).commissionReturn : undefined,
     cnpjLoja: includeStore ? (request as CreateRefinancingSimulationRequest).storeCnpj : undefined,
+  };
+}
+
+export function commissionReturnToPublic(wire: CommissionReturnWire): CommissionReturn {
+  return {
+    type: wire.tipo,
+    target: wire.alvo,
+    minimumReturn: wire.retorno_minimo,
+    maximumReturn: wire.retorno_maximo,
+    allowDefaultRate: wire.permite_taxa_padrao,
   };
 }
 

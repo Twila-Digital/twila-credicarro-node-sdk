@@ -7,8 +7,10 @@ import type {
   RangeRefinancingResponseWire,
   SimulationListResponseWire,
   SimulationWire,
+  ListCommissionReturnsResponseWire,
 } from '../internal/generated/simulation';
 import {
+  commissionReturnToPublic,
   createFinancingRequestToWire,
   createRefinancingRequestToWire,
   financingRangeToPublic,
@@ -18,6 +20,7 @@ import {
 } from '../internal/mapping/simulationMapper';
 import type { ListRequest, PagedResult } from '../pagedResult';
 import type {
+  CommissionReturn,
   CreateFinancingSimulationRequest,
   CreateRefinancingSimulationRequest,
   FinancingRangeOption,
@@ -32,6 +35,12 @@ export interface SimulationsClient {
 
   /** Faixa refinanciável por prazo (`GET v2/proposal/simulation/range/refinancing`). */
   getRefinancingRange(licensePlate: string, storeCnpj: string): Promise<RefinancingRangeOption[]>;
+
+  /**
+   * Retornos de comissão configurados para a loja, por tipo de simulação (`GET v2/proposal/simulation/commission-returns`).
+   * Use um dos valores retornados em `commissionReturn` ao criar a simulação.
+   */
+  getCommissionReturns(storeCnpj: string): Promise<CommissionReturn[]>;
 
   /** Cria a simulação de financiamento (`POST v2/proposal/simulation/financing`); uma opção por prazo. */
   createFinancing(request: CreateFinancingSimulationRequest): Promise<SimulationOption[]>;
@@ -63,6 +72,14 @@ export class SimulationsClientImpl implements SimulationsClient {
     ApiRequestExecutor.ensureSuccess(response);
 
     return refinancingRangeToPublic(response.body as RangeRefinancingResponseWire);
+  }
+
+  async getCommissionReturns(storeCnpj: string): Promise<CommissionReturn[]> {
+    const path = new QueryStringBuilder().add('cnpjLoja', storeCnpj).build('v2/proposal/simulation/commission-returns');
+    const response = await this.executor.get(path);
+    ApiRequestExecutor.ensureSuccess(response);
+
+    return (response.body as ListCommissionReturnsResponseWire).retornos_comissao.map(commissionReturnToPublic);
   }
 
   async createFinancing(request: CreateFinancingSimulationRequest): Promise<SimulationOption[]> {

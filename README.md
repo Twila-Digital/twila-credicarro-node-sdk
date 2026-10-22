@@ -101,12 +101,13 @@ const opcoes = await client.simulations.createFinancing({
   state: 'SP',
   isZeroKm: false,
   storeCnpj: lojaCnpj,
+  // commissionReturn: 2, // opcional, dentro da faixa configurada na loja (ver client.simulations.getCommissionReturns)
 });
 
 for (const opcao of opcoes) console.log(`${opcao.term}x de ${opcao.installmentAmount} (CET ${opcao.monthlyCet}% a.m.)`);
 ```
 
-Para refinanciamento: `getRefinancingRange` e `createRefinancing({ cpf, licensePlate, requestedAmount, storeCnpj })`.
+Para refinanciamento: `getRefinancingRange` e `createRefinancing({ cpf, licensePlate, requestedAmount, storeCnpj, commissionReturn? })`.
 
 ### 3. Criar a proposta e acompanhar
 

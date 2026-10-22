@@ -29,7 +29,17 @@ export interface RefinancingRangeOption {
   maximumAmount: number;
 }
 
-/** Simulação de financiamento (rotas v1 não usam `storeCnpj`). */
+/** Faixa de retorno de comissão configurada para a loja, por tipo de simulação. */
+export interface CommissionReturn {
+  type: 'Financing' | 'Refinancing';
+  target: 'Store' | 'Organization';
+  minimumReturn: number;
+  maximumReturn: number;
+  /** Indica se a loja aceita usar a taxa padrão (sem informar `commissionReturn`). */
+  allowDefaultRate: boolean;
+}
+
+/** Simulação de financiamento (rotas v1 não usam `storeCnpj` nem `commissionReturn`). */
 export interface CreateFinancingSimulationRequest {
   cpf: string;
   licensePlate: string;
@@ -41,6 +51,8 @@ export interface CreateFinancingSimulationRequest {
   isZeroKm: boolean;
   /** CNPJ da loja de integração (formatado ou só números). Obrigatório na rota v2. */
   storeCnpj: string;
+  /** Retorno de comissão, dentro da faixa configurada na loja. Opcional. */
+  commissionReturn?: number;
 }
 
 export interface CreateRefinancingSimulationRequest {
@@ -48,11 +60,13 @@ export interface CreateRefinancingSimulationRequest {
   licensePlate: string;
   requestedAmount: number;
   storeCnpj: string;
+  /** Retorno de comissão, dentro da faixa configurada na loja. Opcional. */
+  commissionReturn?: number;
 }
 
-/** Corpos das rotas v1, que não selecionam a loja pelo CNPJ. */
-export type CreateFinancingSimulationRequestV1 = Omit<CreateFinancingSimulationRequest, 'storeCnpj'>;
-export type CreateRefinancingSimulationRequestV1 = Omit<CreateRefinancingSimulationRequest, 'storeCnpj'>;
+/** Corpos das rotas v1, que não selecionam a loja pelo CNPJ nem aceitam retorno de comissão. */
+export type CreateFinancingSimulationRequestV1 = Omit<CreateFinancingSimulationRequest, 'storeCnpj' | 'commissionReturn'>;
+export type CreateRefinancingSimulationRequestV1 = Omit<CreateRefinancingSimulationRequest, 'storeCnpj' | 'commissionReturn'>;
 
 /** Uma opção de simulação, por prazo. Use `simulationId` para criar a proposta. */
 export interface SimulationOption {

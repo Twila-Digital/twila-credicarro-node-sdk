@@ -1,0 +1,12 @@
+{
+  "name": "sample-cjs",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Sample em CommonJS (require), valida o build .cjs do pacote.",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@twila/credicarro": "file:../.."
+  }
+}

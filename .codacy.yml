@@ -1,0 +1,7 @@
+exclude_paths:
+  - "dist/**"
+  - "coverage/**"
+  - "contract-tests/**"
+  - "samples/**"
+  - "**/*.test.ts"
+  - "**/node_modules/**"

@@ -1,0 +1,14 @@
+{
+  "name": "sample-webhook-express",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Endpoint de webhook (Express) que valida X-CrediCarro-Signature com o corpo bruto limitado a 1 MiB.",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@twila/credicarro": "file:../..",
+    "express": "^4.21.2",
+    "express-rate-limit": "^8.7.1"
+  }
+}

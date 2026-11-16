@@ -20,9 +20,13 @@ import {
 } from '../../src/internal/mapping/proposalMapper';
 import {
   createFinancingRequestToWire,
+  createFinancingWithoutCpfRequestToWire,
   createRefinancingRequestToWire,
+  createRefinancingWithoutCpfRequestToWire,
   financingRangeToPublic,
+  financingWithoutCpfOptionToPublic,
   refinancingRangeToPublic,
+  refinancingWithoutCpfOptionToPublic,
   simulationOptionToPublic,
   simulationToPublic,
 } from '../../src/internal/mapping/simulationMapper';
@@ -75,6 +79,8 @@ const SDK_OPERATIONS: [Method, string][] = [
   ['get', '/v1/proposal/simulation/range/refinancing'],
   ['post', '/v1/proposal/simulation/financing'],
   ['post', '/v1/proposal/simulation/refinancing'],
+  ['post', '/v1/proposal/simulation/financing/without-cpf'],
+  ['post', '/v1/proposal/simulation/refinancing/without-cpf'],
   ['post', '/v1/proposal'],
   ['get', '/v1/proposal/{propostaId}'],
   ['post', '/v1/webhook'],
@@ -165,6 +171,24 @@ describe('wire types de requisição só usam propriedades do schema e cobrem os
     ['simulations.createRefinancing', 'post', '/v2/proposal/simulation/refinancing', () => createRefinancingRequestToWire(refinancing, true)],
     ['v1.simulations.createFinancing', 'post', '/v1/proposal/simulation/financing', () => createFinancingRequestToWire(financing, false)],
     ['v1.simulations.createRefinancing', 'post', '/v1/proposal/simulation/refinancing', () => createRefinancingRequestToWire(refinancing, false)],
+    [
+      'v1.simulations.createFinancingWithoutCpf',
+      'post',
+      '/v1/proposal/simulation/financing/without-cpf',
+      () => createFinancingWithoutCpfRequestToWire({ licensePlate: 'ABC1D23', vehicleAmount: 45000, downPayment: 13500, state: 'SP' }),
+    ],
+    [
+      'v1.simulations.createFinancingWithoutCpf (sem entrada)',
+      'post',
+      '/v1/proposal/simulation/financing/without-cpf',
+      () => createFinancingWithoutCpfRequestToWire({ licensePlate: 'ABC1D23', vehicleAmount: 45000, state: 'SP' }),
+    ],
+    [
+      'v1.simulations.createRefinancingWithoutCpf',
+      'post',
+      '/v1/proposal/simulation/refinancing/without-cpf',
+      () => createRefinancingWithoutCpfRequestToWire({ licensePlate: 'ABC1D23', requestedAmount: 20000, state: 'SP' }),
+    ],
     ['proposals.create', 'post', '/v2/proposal', () => createProposalRequestToWire(proposal)],
     ['v1.proposals.create', 'post', '/v1/proposal', () => createProposalRequestToWire(proposal)],
     [
@@ -251,6 +275,8 @@ describe('wire types de requisição só usam propriedades do schema e cobrem os
 
     for (const [method, path] of [
       ['post', '/v1/webhook'],
+      ['post', '/v1/proposal/simulation/financing/without-cpf'],
+      ['post', '/v1/proposal/simulation/refinancing/without-cpf'],
       ['post', '/v2/proposal/{propostaId}/vehicle-detail'],
       ['post', '/v2/proposal/{propostaId}/deposit-account'],
     ] as [Method, string][]) {
@@ -303,6 +329,16 @@ describe('os mappers de resposta só leem propriedades presentes no schema', () 
       const list = responseSchemaOf(document, operation('post', path), '201');
       readsOnlySchemaProperties(resolveSchema(document, list.properties?.simulacoes?.items), simulationOptionToPublic);
     }
+  });
+
+  it('opções da simulação de financiamento sem CPF', () => {
+    const list = responseSchemaOf(document, operation('post', '/v1/proposal/simulation/financing/without-cpf'), '200');
+    readsOnlySchemaProperties(resolveSchema(document, list.properties?.cotacoes?.items), financingWithoutCpfOptionToPublic);
+  });
+
+  it('opções da simulação de refinanciamento sem CPF', () => {
+    const list = responseSchemaOf(document, operation('post', '/v1/proposal/simulation/refinancing/without-cpf'), '200');
+    readsOnlySchemaProperties(resolveSchema(document, list.properties?.cotacoes?.items), refinancingWithoutCpfOptionToPublic);
   });
 
   it('GET v1 simulation por id e listagem', () => {

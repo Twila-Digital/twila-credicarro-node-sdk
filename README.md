@@ -108,6 +108,30 @@ for (const opcao of opcoes) console.log(`${opcao.term}x de ${opcao.installmentAm
 
 Para refinanciamento: `getRefinancingRange` e `createRefinancing({ cpf, licensePlate, requestedAmount, storeCnpj })`.
 
+Para calcular parcelas **sem CPF** e sem cadastro de cliente (só placa, valor do veículo e UF), use `client.v1.simulations.createFinancingWithoutCpf`. Ela usa a loja de integração do parceiro, não grava nada (as opções não têm `simulationId` e não servem para criar proposta) e não usa `Idempotency-Key`, então é repetida com segurança. `downPayment` é opcional: omitido, a API usa a entrada mínima da taxa da loja.
+
+```typescript
+const opcoesSemCpf = await client.v1.simulations.createFinancingWithoutCpf({
+  licensePlate: 'ABC1D23',
+  vehicleAmount: 45000,
+  state: 'SP',
+});
+
+for (const opcao of opcoesSemCpf) console.log(`${opcao.term}x de ${opcao.installmentAmount} (entrada mínima ${opcao.minimumDownPayment})`);
+```
+
+O refinanciamento sem CPF é `client.v1.simulations.createRefinancingWithoutCpf`, com as mesmas garantias (loja de integração do parceiro, nada gravado, sem `Idempotency-Key`, repetição segura). `state` é obrigatório e só voltam os prazos em cuja faixa o valor cabe; cada opção traz `minimumAmount` e `maximumAmount`.
+
+```typescript
+const opcoesRefinSemCpf = await client.v1.simulations.createRefinancingWithoutCpf({
+  licensePlate: 'ABC1D23',
+  requestedAmount: 20000,
+  state: 'SP',
+});
+
+for (const opcao of opcoesRefinSemCpf) console.log(`${opcao.term}x de ${opcao.installmentAmount} (faixa ${opcao.minimumAmount} a ${opcao.maximumAmount})`);
+```
+
 ### 3. Criar a proposta e acompanhar
 
 ```typescript
@@ -172,7 +196,7 @@ Para refinanciamento, a conta de recebimento: `client.proposals.sendDepositAccou
 | `client.simulations` | `getFinancingRange`, `getRefinancingRange`, `createFinancing`, `createRefinancing`, `get`, `list` |
 | `client.proposals` | `create`, `get`, `list`, `sendVehicleDetails`, `sendDepositAccount`, `uploadDocument` |
 | `client.webhooks` | `create`, `list`, `update`, `delete` |
-| `client.v1.simulations` | `getFinancingRange(placa)`, `getRefinancingRange(placa)`, `createFinancing`, `createRefinancing` (rotas v1, sem `storeCnpj`) |
+| `client.v1.simulations` | `getFinancingRange(placa)`, `getRefinancingRange(placa)`, `createFinancing`, `createRefinancing`, `createFinancingWithoutCpf`, `createRefinancingWithoutCpf` (rotas v1, sem `storeCnpj`) |
 | `client.v1.proposals` | `create`, `get` (rotas v1; `get` devolve `ProposalSummary`) |
 
 Funções utilitárias: `getPendingActions`, `parseWebhookEvent`, `parseWebhookEventUnverified`, `verifyWebhookSignature`, `verifyWebhookAuthorization`, `computeWebhookSignature` (e o agrupamento `CredicarroWebhookEvent`), `DocumentFile`.

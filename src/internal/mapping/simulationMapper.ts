@@ -1,8 +1,12 @@
 import type {
   CreateFinancingSimulationRequestWire,
+  CreateFinancingWithoutCpfRequestWire,
   CreateRefinancingSimulationRequestWire,
+  CreateRefinancingWithoutCpfRequestWire,
+  FinancingWithoutCpfOptionWire,
   RangeFinancingResponseWire,
   RangeRefinancingResponseWire,
+  RefinancingWithoutCpfOptionWire,
   SimulationOptionWire,
   SimulationWire,
   VehicleWire,
@@ -10,10 +14,14 @@ import type {
 import type {
   CreateFinancingSimulationRequest,
   CreateFinancingSimulationRequestV1,
+  CreateFinancingWithoutCpfRequest,
   CreateRefinancingSimulationRequest,
   CreateRefinancingSimulationRequestV1,
+  CreateRefinancingWithoutCpfRequest,
   FinancingRangeOption,
+  FinancingWithoutCpfOption,
   RefinancingRangeOption,
+  RefinancingWithoutCpfOption,
   Simulation,
   SimulationOption,
   SimulationVehicle,
@@ -52,6 +60,17 @@ export function createFinancingRequestToWire(
   };
 }
 
+export function createFinancingWithoutCpfRequestToWire(
+  request: CreateFinancingWithoutCpfRequest,
+): CreateFinancingWithoutCpfRequestWire {
+  return {
+    placa: request.licensePlate,
+    valorVeiculo: request.vehicleAmount,
+    valorEntrada: request.downPayment,
+    uf: request.state,
+  };
+}
+
 export function createRefinancingRequestToWire(
   request: CreateRefinancingSimulationRequest | CreateRefinancingSimulationRequestV1,
   includeStore: boolean,
@@ -82,6 +101,59 @@ export function simulationOptionToPublic(wire: SimulationOptionWire): Simulation
     monthlyInterestRate: wire.percentual_juros_mensal,
     annualInterestRate: wire.percentual_juros_anual,
     approximateDailyRetention: wire.valor_retencao_diaria_aproximado ?? undefined,
+  };
+}
+
+export function financingWithoutCpfOptionToPublic(wire: FinancingWithoutCpfOptionWire): FinancingWithoutCpfOption {
+  return {
+    requestedAmount: wire.valor_solicitado,
+    term: wire.prazo,
+    installmentAmount: wire.valor_parcela,
+    tacAmount: wire.valor_tac,
+    boletoAmount: wire.valor_boleto,
+    insuranceAmount: wire.valor_seguro,
+    iofAmount: wire.valor_iof,
+    iofRate: wire.percentual_iof,
+    totalCreditAmount: wire.valor_credito_total,
+    totalDebtAmount: wire.valor_divida_total,
+    monthlyCet: wire.percentual_cet_mensal,
+    annualCet: wire.percentual_cet_anual,
+    monthlyInterestRate: wire.percentual_juros_mensal,
+    annualInterestRate: wire.percentual_juros_anual,
+    approximateDailyRetention: wire.valor_retencao_diaria_aproximado ?? undefined,
+    minimumDownPayment: wire.valor_entrada_minima,
+  };
+}
+
+export function createRefinancingWithoutCpfRequestToWire(
+  request: CreateRefinancingWithoutCpfRequest,
+): CreateRefinancingWithoutCpfRequestWire {
+  return {
+    placa: request.licensePlate,
+    valorSolicitado: request.requestedAmount,
+    uf: request.state,
+  };
+}
+
+export function refinancingWithoutCpfOptionToPublic(wire: RefinancingWithoutCpfOptionWire): RefinancingWithoutCpfOption {
+  return {
+    requestedAmount: wire.valor_solicitado,
+    term: wire.prazo,
+    installmentAmount: wire.valor_parcela,
+    tacAmount: wire.valor_tac,
+    boletoAmount: wire.valor_boleto,
+    insuranceAmount: wire.valor_seguro,
+    iofAmount: wire.valor_iof,
+    iofRate: wire.percentual_iof,
+    totalCreditAmount: wire.valor_credito_total,
+    totalDebtAmount: wire.valor_divida_total,
+    monthlyCet: wire.percentual_cet_mensal,
+    annualCet: wire.percentual_cet_anual,
+    monthlyInterestRate: wire.percentual_juros_mensal,
+    annualInterestRate: wire.percentual_juros_anual,
+    approximateDailyRetention: wire.valor_retencao_diaria_aproximado ?? undefined,
+    minimumAmount: wire.valor_minimo_refinanciavel,
+    maximumAmount: wire.valor_maximo_refinanciavel,
   };
 }
 

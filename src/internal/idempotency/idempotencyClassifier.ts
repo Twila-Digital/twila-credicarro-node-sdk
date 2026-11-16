@@ -13,6 +13,8 @@ const AUTOMATIC_KEY_PATHS = new Set([
 const DOCUMENT_UPLOAD_PATH = /^v2\/proposal\/[^/]+\/document$/;
 const REPLACEMENT_SEMANTICS_PATH = /^v2\/proposal\/[^/]+\/(vehicle-detail|deposit-account)$/;
 const WEBHOOK_ITEM_PATH = /^v1\/webhook\/[^/]+$/;
+const FINANCING_WITHOUT_CPF_PATH = 'v1/proposal/simulation/financing/without-cpf';
+const REFINANCING_WITHOUT_CPF_PATH = 'v1/proposal/simulation/refinancing/without-cpf';
 const ACCESS_TOKEN_PATH = 'v1/authentication/accesstoken';
 
 function normalize(path: string): string {
@@ -45,6 +47,9 @@ export function isRetrySafe(method: string, path: string, hasIdempotencyKey: boo
   if (normalized === ACCESS_TOKEN_PATH) return true;
 
   if (REPLACEMENT_SEMANTICS_PATH.test(normalized)) return true;
+
+  // Cálculo puro, sem efeito colateral: seguro repetir, como uma leitura.
+  if (normalized === FINANCING_WITHOUT_CPF_PATH || normalized === REFINANCING_WITHOUT_CPF_PATH) return true;
 
   return hasIdempotencyKey;
 }

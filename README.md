@@ -113,13 +113,13 @@ Para refinanciamento: `getRefinancingRange` e `createRefinancing({ cpf, licenseP
 ```typescript
 import { CommissionReturnTarget, SimulationType } from '@twila/credicarro';
 
-const faixas = await client.simulations.getCommissionReturns(lojaCnpj); // [] se a loja não tiver retorno configurado
+const faixas = await client.simulations.getCommissionReturns(lojaCnpj);
 const faixa = faixas.find((f) => f.type === SimulationType.Financing && f.target === CommissionReturnTarget.Store);
 
 const opcoes = await client.simulations.createFinancing({ ...simulacao, commissionReturn: faixa?.maximumReturn });
 ```
 
-Fora da faixa, a API retorna `422 Store.CommissionReturn.OutOfRange`; sem faixa configurada, `422 Store.CommissionReturn.NotConfigured`. As rotas v1 não aceitam o campo.
+Lista vazia significa loja sem retorno configurado. Fora da faixa, a API retorna `422 Store.CommissionReturn.OutOfRange`; sem faixa configurada, `422 Store.CommissionReturn.NotConfigured`. As rotas v1 não aceitam o campo.
 
 ### 3. Criar a proposta e acompanhar
 
@@ -273,14 +273,12 @@ const { webhookId, signingSecret } = await client.webhooks.create({
 ### Histórico e reenvio
 
 ```typescript
-// Envios que falharam na última semana (todos os filtros são opcionais)
 const falhas = await client.webhooks.listDeliveries({ initialDate: '2026-11-01', finalDate: '2026-11-07', statusCode: 500 });
 
-// Reenvia o mesmo corpo para a sua URL depois de corrigir a falha
 const { statusCode, response } = await client.webhooks.resend(falhas.items[0].id);
 ```
 
-`resend` é uma única tentativa: o SDK **não** o repete automaticamente (repetir dispararia o webhook de novo) e espera até 30 s pela resposta. O reenvio chega com uma `Idempotency-Key` nova (`{id_mensagem}:{id_webhook}:{id_tentativa}`); para tratá-lo como a mesma notificação, deduplique pelo prefixo `{id_mensagem}:{id_webhook}`. `statusCode` vem `undefined` quando a sua URL não respondeu.
+Os filtros do histórico são opcionais. `resend` reenvia o mesmo corpo e é uma única tentativa: o SDK **não** o repete automaticamente (repetir dispararia o webhook de novo) e espera até 30 s pela resposta. O reenvio chega com uma `Idempotency-Key` nova (`{id_mensagem}:{id_webhook}:{id_tentativa}`); para tratá-lo como a mesma notificação, deduplique pelo prefixo `{id_mensagem}:{id_webhook}`. `statusCode` vem `undefined` quando a sua URL não respondeu.
 
 Valide a notificação com o **corpo bruto** (antes de qualquer `JSON.parse`) e o header `X-CrediCarro-Signature`:
 

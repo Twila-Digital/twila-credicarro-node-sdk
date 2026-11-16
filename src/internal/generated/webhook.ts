@@ -26,6 +26,21 @@ export interface WebhookWire {
   status: string;
 }
 
+export interface WebhookDeliveryWire {
+  id_auditoria: string;
+  id_webhook?: string | null;
+  tipo: string;
+  requisicao: string;
+  resposta: string;
+  status_http?: number | null;
+  data_criacao: string;
+}
+
+export interface WebhookResendResponseWire {
+  status_http?: number | null;
+  resposta: string;
+}
+
 /** Payload enviado ao endpoint do integrador. O v1 só traz os três primeiros campos. */
 export interface ProposalWebhookEventWire {
   id_proposta: string;

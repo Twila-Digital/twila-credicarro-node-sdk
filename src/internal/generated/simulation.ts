@@ -15,6 +15,7 @@ export interface CreateFinancingSimulationRequestWire {
   uf: string;
   isVeiculoZeroKm: boolean;
   cnpjLoja?: string;
+  retornoComissao?: number;
 }
 
 /** Corpo de `POST v1/proposal/simulation/refinancing` (sem `cnpjLoja`) e de `v2` (com `cnpjLoja`). */
@@ -23,6 +24,19 @@ export interface CreateRefinancingSimulationRequestWire {
   placa: string;
   valorSolicitado: number;
   cnpjLoja?: string;
+  retornoComissao?: number;
+}
+
+export interface CommissionReturnWire {
+  tipo: string;
+  alvo: string;
+  retorno_minimo: number;
+  retorno_maximo: number;
+  permite_taxa_padrao: boolean;
+}
+
+export interface CommissionReturnsResponseWire {
+  retornos_comissao: CommissionReturnWire[];
 }
 
 export interface SimulationOptionWire {

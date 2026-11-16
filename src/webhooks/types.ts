@@ -81,6 +81,48 @@ export interface UpdateWebhookRequest {
   status?: WebhookStatus;
 }
 
+/** Filtros do histórico de envios. Datas sem horário (`'2026-11-05'`) valem pelo dia inteiro. */
+export interface WebhookDeliveryFilter {
+  /** Início do período (`data_inicial`). `Date` é enviado em UTC. */
+  initialDate?: string | Date;
+  /** Fim do período (`data_final`). */
+  finalDate?: string | Date;
+  proposalId?: string;
+  simulationId?: string;
+  /** Número da proposta, até 50 caracteres. */
+  proposalNumber?: string;
+  /** Status HTTP devolvido pela sua URL (100 a 599). */
+  statusCode?: number;
+}
+
+/** Filtros e paginação do histórico de envios (`GET v1/webhook/audit`). */
+export interface ListWebhookDeliveriesRequest extends WebhookDeliveryFilter {
+  page?: number;
+  pageSize?: number;
+}
+
+/** Um envio de webhook registrado no histórico. */
+export interface WebhookDelivery {
+  /** `id_auditoria`: use em `resend` para reenviar. */
+  id: string;
+  webhookId?: string;
+  type: WebhookType;
+  /** Corpo enviado, como texto JSON. */
+  request: string;
+  /** Corpo devolvido pela sua URL; vazio quando não houve resposta. */
+  response: string;
+  /** Status HTTP devolvido pela sua URL; `undefined` quando não houve resposta (ex.: timeout). */
+  statusCode?: number;
+  createdAt: string;
+}
+
+/** Resultado imediato do reenvio. */
+export interface WebhookResendResult {
+  /** Status HTTP devolvido pela sua URL; `undefined` quando ela não respondeu. */
+  statusCode?: number;
+  response: string;
+}
+
 /** Notificação de proposta (payload v1: só id e status; payload v2: retrato completo). */
 export interface ProposalWebhookEvent {
   proposalId: string;

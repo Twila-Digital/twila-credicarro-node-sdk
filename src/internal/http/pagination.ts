@@ -8,6 +8,11 @@ const MAX_PAGE_SIZE = 100;
 
 /** Valida `page` (>= 1) e `pageSize` (1 a 100) e devolve o caminho com `pagina_inicial` e `limite`. */
 export function buildListPath(path: string, request: ListRequest | undefined): string {
+  return addPaging(new QueryStringBuilder(), request).build(path);
+}
+
+/** Valida `page` e `pageSize` e acrescenta `pagina_inicial` e `limite` à query. */
+export function addPaging(query: QueryStringBuilder, request: ListRequest | undefined): QueryStringBuilder {
   const page = request?.page ?? MIN_PAGE;
   const pageSize = request?.pageSize ?? 10;
 
@@ -16,7 +21,7 @@ export function buildListPath(path: string, request: ListRequest | undefined): s
   if (!Number.isInteger(pageSize) || pageSize < MIN_PAGE_SIZE || pageSize > MAX_PAGE_SIZE)
     throw new RangeError('pageSize deve ser um inteiro entre 1 e 100.');
 
-  return new QueryStringBuilder().add('pagina_inicial', page).add('limite', pageSize).build(path);
+  return query.add('pagina_inicial', page).add('limite', pageSize);
 }
 
 export function pagedToPublic<TWire, TPublic>(wire: PagedResultWire<TWire>, map: (item: TWire) => TPublic): PagedResult<TPublic> {

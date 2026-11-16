@@ -1,4 +1,5 @@
 import type {
+  CommissionReturnsResponseWire,
   CreateFinancingSimulationRequestWire,
   CreateRefinancingSimulationRequestWire,
   RangeFinancingResponseWire,
@@ -8,6 +9,7 @@ import type {
   VehicleWire,
 } from '../generated/simulation';
 import type {
+  CommissionReturn,
   CreateFinancingSimulationRequest,
   CreateFinancingSimulationRequestV1,
   CreateRefinancingSimulationRequest,
@@ -18,7 +20,12 @@ import type {
   SimulationOption,
   SimulationVehicle,
 } from '../../simulations/types';
-import { SIMULATION_TYPE_NAMES, SimulationType } from '../../simulations/types';
+import {
+  COMMISSION_RETURN_TARGET_NAMES,
+  CommissionReturnTarget,
+  SIMULATION_TYPE_NAMES,
+  SimulationType,
+} from '../../simulations/types';
 import { enumFromName } from '../util/enumMapping';
 import { protectPii } from '../util/pii';
 
@@ -49,6 +56,7 @@ export function createFinancingRequestToWire(
     uf: request.state,
     isVeiculoZeroKm: request.isZeroKm,
     cnpjLoja: includeStore ? (request as CreateFinancingSimulationRequest).storeCnpj : undefined,
+    retornoComissao: includeStore ? (request as CreateFinancingSimulationRequest).commissionReturn : undefined,
   };
 }
 
@@ -61,7 +69,18 @@ export function createRefinancingRequestToWire(
     placa: request.licensePlate,
     valorSolicitado: request.requestedAmount,
     cnpjLoja: includeStore ? (request as CreateRefinancingSimulationRequest).storeCnpj : undefined,
+    retornoComissao: includeStore ? (request as CreateRefinancingSimulationRequest).commissionReturn : undefined,
   };
+}
+
+export function commissionReturnsToPublic(wire: CommissionReturnsResponseWire): CommissionReturn[] {
+  return (wire.retornos_comissao ?? []).map((item) => ({
+    type: enumFromName(SIMULATION_TYPE_NAMES, item.tipo, SimulationType.Unknown),
+    target: enumFromName(COMMISSION_RETURN_TARGET_NAMES, item.alvo, CommissionReturnTarget.Unknown),
+    minimumReturn: item.retorno_minimo,
+    maximumReturn: item.retorno_maximo,
+    allowsDefaultRate: item.permite_taxa_padrao,
+  }));
 }
 
 export function simulationOptionToPublic(wire: SimulationOptionWire): SimulationOption {

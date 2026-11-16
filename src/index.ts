@@ -84,6 +84,8 @@ export {
   type SimulationRates,
   type SimulationIof,
   type SimulationVehicle,
+  CommissionReturnTarget,
+  type CommissionReturn,
 } from './simulations/types';
 
 export type { ProposalsClient } from './proposals/proposalsClient';
@@ -148,6 +150,10 @@ export {
   type UpdateWebhookRequest,
   type ProposalWebhookEvent,
   type WebhookVerificationOptions,
+  type WebhookDeliveryFilter,
+  type ListWebhookDeliveriesRequest,
+  type WebhookDelivery,
+  type WebhookResendResult,
 } from './webhooks/types';
 export {
   parseWebhookEvent,

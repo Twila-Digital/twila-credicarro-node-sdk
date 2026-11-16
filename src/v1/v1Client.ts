@@ -2,8 +2,10 @@ import { ApiRequestExecutor } from '../internal/http/apiRequestExecutor';
 import { QueryStringBuilder } from '../internal/http/queryString';
 import type { ProposalIdResponseWire, ProposalSummaryWire } from '../internal/generated/proposal';
 import type {
+  FinancingWithoutCpfResponseWire,
   RangeFinancingResponseWire,
   RangeRefinancingResponseWire,
+  RefinancingWithoutCpfResponseWire,
   SimulationListResponseWire,
 } from '../internal/generated/simulation';
 import {
@@ -12,17 +14,25 @@ import {
 } from '../internal/mapping/proposalMapper';
 import {
   createFinancingRequestToWire,
+  createFinancingWithoutCpfRequestToWire,
   createRefinancingRequestToWire,
+  createRefinancingWithoutCpfRequestToWire,
   financingRangeToPublic,
+  financingWithoutCpfOptionToPublic,
   refinancingRangeToPublic,
+  refinancingWithoutCpfOptionToPublic,
   simulationOptionToPublic,
 } from '../internal/mapping/simulationMapper';
 import type { CreateProposalRequest, ProposalSummary } from '../proposals/types';
 import type {
   CreateFinancingSimulationRequestV1,
+  CreateFinancingWithoutCpfRequest,
   CreateRefinancingSimulationRequestV1,
+  CreateRefinancingWithoutCpfRequest,
   FinancingRangeOption,
+  FinancingWithoutCpfOption,
   RefinancingRangeOption,
+  RefinancingWithoutCpfOption,
   SimulationOption,
 } from '../simulations/types';
 
@@ -32,6 +42,16 @@ export interface V1SimulationsClient {
   getRefinancingRange(licensePlate: string): Promise<RefinancingRangeOption[]>;
   createFinancing(request: CreateFinancingSimulationRequestV1): Promise<SimulationOption[]>;
   createRefinancing(request: CreateRefinancingSimulationRequestV1): Promise<SimulationOption[]>;
+  /**
+   * Simula um financiamento só com placa, valor do veículo e UF, sem CPF. Nada é gravado e as opções não têm
+   * `simulationId`. Não usa `Idempotency-Key` e pode ser repetida com segurança.
+   */
+  createFinancingWithoutCpf(request: CreateFinancingWithoutCpfRequest): Promise<FinancingWithoutCpfOption[]>;
+  /**
+   * Simula um refinanciamento só com placa, valor solicitado e UF, sem CPF. Nada é gravado e as opções não têm
+   * `simulationId`. Não usa `Idempotency-Key` e pode ser repetida com segurança.
+   */
+  createRefinancingWithoutCpf(request: CreateRefinancingWithoutCpfRequest): Promise<RefinancingWithoutCpfOption[]>;
 }
 
 /** Propostas v1 (`POST v1/proposal`, `GET v1/proposal/{id}`). */
@@ -80,6 +100,26 @@ class V1SimulationsClientImpl implements V1SimulationsClient {
     ApiRequestExecutor.ensureSuccess(response);
 
     return (response.body as SimulationListResponseWire).simulacoes.map(simulationOptionToPublic);
+  }
+
+  async createFinancingWithoutCpf(request: CreateFinancingWithoutCpfRequest): Promise<FinancingWithoutCpfOption[]> {
+    const response = await this.executor.post(
+      'v1/proposal/simulation/financing/without-cpf',
+      createFinancingWithoutCpfRequestToWire(request),
+    );
+    ApiRequestExecutor.ensureSuccess(response);
+
+    return (response.body as FinancingWithoutCpfResponseWire).cotacoes.map(financingWithoutCpfOptionToPublic);
+  }
+
+  async createRefinancingWithoutCpf(request: CreateRefinancingWithoutCpfRequest): Promise<RefinancingWithoutCpfOption[]> {
+    const response = await this.executor.post(
+      'v1/proposal/simulation/refinancing/without-cpf',
+      createRefinancingWithoutCpfRequestToWire(request),
+    );
+    ApiRequestExecutor.ensureSuccess(response);
+
+    return (response.body as RefinancingWithoutCpfResponseWire).cotacoes.map(refinancingWithoutCpfOptionToPublic);
   }
 }
 

@@ -24,6 +24,14 @@ describe('requiresAutomaticIdempotencyKey', () => {
     expect(requiresAutomaticIdempotencyKey('POST', 'v2/proposal/abc/document')).toBe(false);
   });
 
+  it('never generates a key automatically for the financing simulation without CPF', () => {
+    expect(requiresAutomaticIdempotencyKey('POST', 'v1/proposal/simulation/financing/without-cpf')).toBe(false);
+  });
+
+  it('never generates a key automatically for the refinancing simulation without CPF', () => {
+    expect(requiresAutomaticIdempotencyKey('POST', 'v1/proposal/simulation/refinancing/without-cpf')).toBe(false);
+  });
+
   it('never generates a key automatically for v1/customer/unified', () => {
     expect(requiresAutomaticIdempotencyKey('POST', 'v1/customer/unified')).toBe(false);
   });
@@ -59,6 +67,18 @@ describe('isRetrySafe', () => {
   it('POST v1/customer/unified is retry-safe only with an explicit key', () => {
     expect(isRetrySafe('POST', 'v1/customer/unified', false)).toBe(false);
     expect(isRetrySafe('POST', 'v1/customer/unified', true)).toBe(true);
+  });
+
+  it('POST financing without CPF has no side effect and is retry-safe without a key', () => {
+    expect(isRetrySafe('POST', 'v1/proposal/simulation/financing/without-cpf', false)).toBe(true);
+    expect(isRetrySafe('POST', '/v1/proposal/simulation/financing/without-cpf/', false)).toBe(true);
+    expect(isRetrySafe('POST', 'v1/proposal/simulation/financing', false)).toBe(false);
+  });
+
+  it('POST refinancing without CPF has no side effect and is retry-safe without a key', () => {
+    expect(isRetrySafe('POST', 'v1/proposal/simulation/refinancing/without-cpf', false)).toBe(true);
+    expect(isRetrySafe('POST', '/v1/proposal/simulation/refinancing/without-cpf/', false)).toBe(true);
+    expect(isRetrySafe('POST', 'v1/proposal/simulation/refinancing', false)).toBe(false);
   });
 
   it('vehicle-detail and deposit-account have replacement semantics and are retry-safe', () => {

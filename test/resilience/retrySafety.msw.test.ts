@@ -35,6 +35,42 @@ const customer: UpsertCustomerRequest = {
 const pdf = () => DocumentFile.fromBytes(Buffer.from('%PDF-1.7 teste'), 'cnh-comprador.pdf');
 
 describe('retry safety and idempotency keys (MSW)', () => {
+  it('POST v1/proposal/simulation/financing/without-cpf is retried on 503 without any Idempotency-Key', async () => {
+    stubToken(server);
+    const keys: (string | null)[] = [];
+
+    server.use(
+      http.post(`${BASE_URL}/v1/proposal/simulation/financing/without-cpf`, ({ request }) => {
+        keys.push(request.headers.get('Idempotency-Key'));
+        if (keys.length === 1) return new HttpResponse(null, { status: 503 });
+        return HttpResponse.json({ cotacoes: [] });
+      }),
+    );
+
+    const options = await newClient().v1.simulations.createFinancingWithoutCpf({ licensePlate: 'ABC1D23', vehicleAmount: 45000, state: 'SP' });
+
+    expect(options).toEqual([]);
+    expect(keys).toEqual([null, null]);
+  });
+
+  it('POST v1/proposal/simulation/refinancing/without-cpf is retried on 503 without any Idempotency-Key', async () => {
+    stubToken(server);
+    const keys: (string | null)[] = [];
+
+    server.use(
+      http.post(`${BASE_URL}/v1/proposal/simulation/refinancing/without-cpf`, ({ request }) => {
+        keys.push(request.headers.get('Idempotency-Key'));
+        if (keys.length === 1) return new HttpResponse(null, { status: 503 });
+        return HttpResponse.json({ cotacoes: [] });
+      }),
+    );
+
+    const options = await newClient().v1.simulations.createRefinancingWithoutCpf({ licensePlate: 'ABC1D23', requestedAmount: 20000, state: 'SP' });
+
+    expect(options).toEqual([]);
+    expect(keys).toEqual([null, null]);
+  });
+
   it('POST v1/customer/unified without a key is NOT retried and gets no automatic key', async () => {
     stubToken(server);
     const keys: (string | null)[] = [];

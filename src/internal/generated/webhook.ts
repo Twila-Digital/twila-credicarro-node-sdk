@@ -36,12 +36,6 @@ export interface WebhookDeliveryWire {
   data_criacao: string;
 }
 
-export interface WebhookDeliveryChartPointWire {
-  rotulo: string;
-  sucessos: number;
-  erros: number;
-}
-
 export interface WebhookResendResponseWire {
   status_http?: number | null;
   resposta: string;

@@ -81,7 +81,7 @@ export interface UpdateWebhookRequest {
   status?: WebhookStatus;
 }
 
-/** Filtros do histórico e do gráfico de envios. Datas sem horário (`'2026-11-05'`) valem pelo dia inteiro. */
+/** Filtros do histórico de envios. Datas sem horário (`'2026-11-05'`) valem pelo dia inteiro. */
 export interface WebhookDeliveryFilter {
   /** Início do período (`data_inicial`). `Date` é enviado em UTC. */
   initialDate?: string | Date;
@@ -101,12 +101,6 @@ export interface ListWebhookDeliveriesRequest extends WebhookDeliveryFilter {
   pageSize?: number;
 }
 
-/** Filtros do gráfico de envios: o período é obrigatório e pode ter até 31 dias. */
-export interface WebhookDeliveryChartRequest extends WebhookDeliveryFilter {
-  initialDate: string | Date;
-  finalDate: string | Date;
-}
-
 /** Um envio de webhook registrado no histórico. */
 export interface WebhookDelivery {
   /** `id_auditoria`: use em `resend` para reenviar. */
@@ -120,14 +114,6 @@ export interface WebhookDelivery {
   /** Status HTTP devolvido pela sua URL; `undefined` quando não houve resposta (ex.: timeout). */
   statusCode?: number;
   createdAt: string;
-}
-
-/** Contagem de envios em um intervalo do gráfico (horário de Brasília). */
-export interface WebhookDeliveryChartPoint {
-  /** Início do intervalo: `"10m"` (10 minutos), `"14h"` (hora) ou `"05"` (dia), conforme o período. */
-  label: string;
-  successCount: number;
-  errorCount: number;
 }
 
 /** Resultado imediato do reenvio. */

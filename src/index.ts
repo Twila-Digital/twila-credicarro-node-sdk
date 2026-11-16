@@ -152,9 +152,7 @@ export {
   type WebhookVerificationOptions,
   type WebhookDeliveryFilter,
   type ListWebhookDeliveriesRequest,
-  type WebhookDeliveryChartRequest,
   type WebhookDelivery,
-  type WebhookDeliveryChartPoint,
   type WebhookResendResult,
 } from './webhooks/types';
 export {

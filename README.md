@@ -184,7 +184,7 @@ Para refinanciamento, a conta de recebimento: `client.proposals.sendDepositAccou
 | `client.customers` | `upsert`, `create`, `upsertAddress`, `upsertProfessionalData` |
 | `client.simulations` | `getFinancingRange`, `getRefinancingRange`, `getCommissionReturns`, `createFinancing`, `createRefinancing`, `get`, `list` |
 | `client.proposals` | `create`, `get`, `list`, `sendVehicleDetails`, `sendDepositAccount`, `uploadDocument` |
-| `client.webhooks` | `create`, `list`, `update`, `delete`, `listDeliveries`, `getDeliveryChart`, `resend` |
+| `client.webhooks` | `create`, `list`, `update`, `delete`, `listDeliveries`, `resend` |
 | `client.v1.simulations` | `getFinancingRange(placa)`, `getRefinancingRange(placa)`, `createFinancing`, `createRefinancing` (rotas v1, sem `storeCnpj`) |
 | `client.v1.proposals` | `create`, `get` (rotas v1; `get` devolve `ProposalSummary`) |
 
@@ -270,14 +270,11 @@ const { webhookId, signingSecret } = await client.webhooks.create({
 });
 ```
 
-### Histórico, gráfico e reenvio
+### Histórico e reenvio
 
 ```typescript
 // Envios que falharam na última semana (todos os filtros são opcionais)
 const falhas = await client.webhooks.listDeliveries({ initialDate: '2026-11-01', finalDate: '2026-11-07', statusCode: 500 });
-
-// Sucessos e erros por intervalo (período obrigatório, até 31 dias; rótulos no horário de Brasília)
-const grafico = await client.webhooks.getDeliveryChart({ initialDate: '2026-11-01', finalDate: '2026-11-07' });
 
 // Reenvia o mesmo corpo para a sua URL depois de corrigir a falha
 const { statusCode, response } = await client.webhooks.resend(falhas.items[0].id);

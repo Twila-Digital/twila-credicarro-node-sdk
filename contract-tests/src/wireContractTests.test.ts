@@ -32,7 +32,6 @@ import {
   createWebhookResultToPublic,
   addWebhookDeliveryFilter,
   updateWebhookRequestToWire,
-  webhookDeliveryChartPointToPublic,
   webhookDeliveryToPublic,
   webhookResendResultToPublic,
   webhookToPublic,
@@ -88,7 +87,6 @@ const SDK_OPERATIONS: [Method, string][] = [
   ['put', '/v1/webhook/{webhookId}'],
   ['delete', '/v1/webhook/{webhookId}'],
   ['get', '/v1/webhook/audit'],
-  ['get', '/v1/webhook/audit/chart'],
   ['post', '/v1/webhook/audit/{auditWebhookId}/resend'],
 ];
 
@@ -298,7 +296,6 @@ describe('wire types de requisição só usam propriedades do schema e cobrem os
     expect(queryParameterNames(document, operation('get', '/v1/webhook/audit'))).toEqual(
       expect.arrayContaining([...filter.keys(), ...list.keys()]),
     );
-    expect(queryParameterNames(document, operation('get', '/v1/webhook/audit/chart'))).toEqual(expect.arrayContaining([...filter.keys()]));
   });
 
   it('o reenvio de webhook não tem corpo nem Idempotency-Key', () => {
@@ -357,10 +354,8 @@ describe('os mappers de resposta só leem propriedades presentes no schema', () 
     readsOnlySchemaProperties(itemSchema('get', '/v1/webhook'), webhookToPublic);
   });
 
-  it('webhooks: histórico, gráfico e reenvio', () => {
+  it('webhooks: histórico e reenvio', () => {
     readsOnlySchemaProperties(itemSchema('get', '/v1/webhook/audit'), webhookDeliveryToPublic);
-    const chart = responseSchemaOf(document, operation('get', '/v1/webhook/audit/chart'), '200');
-    readsOnlySchemaProperties(resolveSchema(document, chart.items), webhookDeliveryChartPointToPublic);
     readsOnlySchemaProperties(
       responseSchemaOf(document, operation('post', '/v1/webhook/audit/{auditWebhookId}/resend'), '200'),
       webhookResendResultToPublic,

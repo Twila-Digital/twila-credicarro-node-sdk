@@ -3,7 +3,6 @@ import type {
   CreateWebhookResponseWire,
   ProposalWebhookEventWire,
   UpdateWebhookRequestWire,
-  WebhookDeliveryChartPointWire,
   WebhookDeliveryWire,
   WebhookResendResponseWire,
   WebhookWire,
@@ -27,7 +26,6 @@ import {
   type UpdateWebhookRequest,
   type Webhook,
   type WebhookDelivery,
-  type WebhookDeliveryChartPoint,
   type WebhookDeliveryFilter,
   type WebhookResendResult,
 } from '../../webhooks/types';
@@ -65,7 +63,7 @@ export function webhookToPublic(wire: WebhookWire): Webhook {
   };
 }
 
-/** Acrescenta os filtros do histórico/gráfico (`data_inicial`, `data_final`, `id_proposta`...) à query. */
+/** Acrescenta os filtros do histórico (`data_inicial`, `data_final`, `id_proposta`...) à query. */
 export function addWebhookDeliveryFilter(query: QueryStringBuilder, filter: WebhookDeliveryFilter | undefined): QueryStringBuilder {
   return query
     .add('data_inicial', filter?.initialDate !== undefined ? toIsoString(filter.initialDate) : undefined)
@@ -86,10 +84,6 @@ export function webhookDeliveryToPublic(wire: WebhookDeliveryWire): WebhookDeliv
     statusCode: wire.status_http ?? undefined,
     createdAt: wire.data_criacao,
   });
-}
-
-export function webhookDeliveryChartPointToPublic(wire: WebhookDeliveryChartPointWire): WebhookDeliveryChartPoint {
-  return { label: wire.rotulo, successCount: wire.sucessos, errorCount: wire.erros };
 }
 
 export function webhookResendResultToPublic(wire: WebhookResendResponseWire): WebhookResendResult {

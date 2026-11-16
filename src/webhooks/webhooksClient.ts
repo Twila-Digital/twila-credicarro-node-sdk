@@ -4,7 +4,6 @@ import { QueryStringBuilder } from '../internal/http/queryString';
 import type { PagedResultWire } from '../internal/generated/paged';
 import type {
   CreateWebhookResponseWire,
-  WebhookDeliveryChartPointWire,
   WebhookDeliveryWire,
   WebhookResendResponseWire,
   WebhookWire,
@@ -14,7 +13,6 @@ import {
   createWebhookRequestToWire,
   createWebhookResultToPublic,
   updateWebhookRequestToWire,
-  webhookDeliveryChartPointToPublic,
   webhookDeliveryToPublic,
   webhookResendResultToPublic,
   webhookToPublic,
@@ -27,8 +25,6 @@ import type {
   UpdateWebhookRequest,
   Webhook,
   WebhookDelivery,
-  WebhookDeliveryChartPoint,
-  WebhookDeliveryChartRequest,
   WebhookResendResult,
 } from './types';
 
@@ -56,12 +52,6 @@ export interface WebhooksClient {
    * Todos os filtros são opcionais; paginação explícita como em `list`.
    */
   listDeliveries(request?: ListWebhookDeliveriesRequest): Promise<PagedResult<WebhookDelivery>>;
-
-  /**
-   * Sucessos e erros por intervalo, no horário de Brasília (`GET v1/webhook/audit/chart`).
-   * O período é obrigatório e pode ter até 31 dias.
-   */
-  getDeliveryChart(request: WebhookDeliveryChartRequest): Promise<WebhookDeliveryChartPoint[]>;
 
   /**
    * Reenvia um envio do histórico (`POST v1/webhook/audit/{id}/resend`). Uma única tentativa, sem retentativa
@@ -103,17 +93,6 @@ export class WebhooksClientImpl implements WebhooksClient {
     ApiRequestExecutor.ensureSuccess(response);
 
     return pagedToPublic(response.body as PagedResultWire<WebhookDeliveryWire>, webhookDeliveryToPublic);
-  }
-
-  async getDeliveryChart(request: WebhookDeliveryChartRequest): Promise<WebhookDeliveryChartPoint[]> {
-    if (request?.initialDate === undefined || request?.finalDate === undefined)
-      throw new RangeError('initialDate e finalDate são obrigatórios no gráfico de envios.');
-
-    const path = addWebhookDeliveryFilter(new QueryStringBuilder(), request).build('v1/webhook/audit/chart');
-    const response = await this.executor.get(path);
-    ApiRequestExecutor.ensureSuccess(response);
-
-    return ((response.body as WebhookDeliveryChartPointWire[]) ?? []).map(webhookDeliveryChartPointToPublic);
   }
 
   async resend(deliveryId: string): Promise<WebhookResendResult> {

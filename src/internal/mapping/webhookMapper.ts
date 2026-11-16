@@ -3,6 +3,9 @@ import type {
   CreateWebhookResponseWire,
   ProposalWebhookEventWire,
   UpdateWebhookRequestWire,
+  WebhookDeliveryChartPointWire,
+  WebhookDeliveryWire,
+  WebhookResendResponseWire,
   WebhookWire,
 } from '../generated/webhook';
 import {
@@ -23,7 +26,13 @@ import {
   type ProposalWebhookEvent,
   type UpdateWebhookRequest,
   type Webhook,
+  type WebhookDelivery,
+  type WebhookDeliveryChartPoint,
+  type WebhookDeliveryFilter,
+  type WebhookResendResult,
 } from '../../webhooks/types';
+import { QueryStringBuilder } from '../http/queryString';
+import { toIsoString } from '../util/date';
 import { enumFromName, resolveEnum } from '../util/enumMapping';
 import { protectPii } from '../util/pii';
 import { participantToPublic } from './proposalMapper';
@@ -54,6 +63,37 @@ export function webhookToPublic(wire: WebhookWire): Webhook {
     authenticationType: enumFromName(WEBHOOK_AUTHENTICATION_TYPE_NAMES, wire.tipo_autenticacao, WebhookAuthenticationType.Unknown),
     status: enumFromName(WEBHOOK_STATUS_NAMES, wire.status, WebhookStatus.Unknown),
   };
+}
+
+/** Acrescenta os filtros do histórico/gráfico (`data_inicial`, `data_final`, `id_proposta`...) à query. */
+export function addWebhookDeliveryFilter(query: QueryStringBuilder, filter: WebhookDeliveryFilter | undefined): QueryStringBuilder {
+  return query
+    .add('data_inicial', filter?.initialDate !== undefined ? toIsoString(filter.initialDate) : undefined)
+    .add('data_final', filter?.finalDate !== undefined ? toIsoString(filter.finalDate) : undefined)
+    .add('id_proposta', filter?.proposalId)
+    .add('id_simulacao', filter?.simulationId)
+    .add('numero_proposta', filter?.proposalNumber)
+    .add('status_http', filter?.statusCode);
+}
+
+export function webhookDeliveryToPublic(wire: WebhookDeliveryWire): WebhookDelivery {
+  return protectPii({
+    id: wire.id_auditoria,
+    webhookId: wire.id_webhook ?? undefined,
+    type: enumFromName(WEBHOOK_TYPE_NAMES, wire.tipo, WebhookType.Unknown),
+    request: wire.requisicao,
+    response: wire.resposta ?? '',
+    statusCode: wire.status_http ?? undefined,
+    createdAt: wire.data_criacao,
+  });
+}
+
+export function webhookDeliveryChartPointToPublic(wire: WebhookDeliveryChartPointWire): WebhookDeliveryChartPoint {
+  return { label: wire.rotulo, successCount: wire.sucessos, errorCount: wire.erros };
+}
+
+export function webhookResendResultToPublic(wire: WebhookResendResponseWire): WebhookResendResult {
+  return protectPii({ statusCode: wire.status_http ?? undefined, response: wire.resposta ?? '' });
 }
 
 /** Aceita o payload v2 (nomes em português, retrato completo) e o v1 (nomes em inglês, só id e status). */

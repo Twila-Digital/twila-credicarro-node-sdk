@@ -3,12 +3,14 @@ import { QueryStringBuilder } from '../internal/http/queryString';
 import { buildListPath, pagedToPublic } from '../internal/http/pagination';
 import type { PagedResultWire } from '../internal/generated/paged';
 import type {
+  CommissionReturnsResponseWire,
   RangeFinancingResponseWire,
   RangeRefinancingResponseWire,
   SimulationListResponseWire,
   SimulationWire,
 } from '../internal/generated/simulation';
 import {
+  commissionReturnsToPublic,
   createFinancingRequestToWire,
   createRefinancingRequestToWire,
   financingRangeToPublic,
@@ -18,6 +20,7 @@ import {
 } from '../internal/mapping/simulationMapper';
 import type { ListRequest, PagedResult } from '../pagedResult';
 import type {
+  CommissionReturn,
   CreateFinancingSimulationRequest,
   CreateRefinancingSimulationRequest,
   FinancingRangeOption,
@@ -32,6 +35,12 @@ export interface SimulationsClient {
 
   /** Faixa refinanciável por prazo (`GET v2/proposal/simulation/range/refinancing`). */
   getRefinancingRange(licensePlate: string, storeCnpj: string): Promise<RefinancingRangeOption[]>;
+
+  /**
+   * Faixas de retorno de comissão da loja (`GET v2/proposal/simulation/commission-returns`).
+   * Lista vazia quando a loja não tem retorno configurado.
+   */
+  getCommissionReturns(storeCnpj: string): Promise<CommissionReturn[]>;
 
   /** Cria a simulação de financiamento (`POST v2/proposal/simulation/financing`); uma opção por prazo. */
   createFinancing(request: CreateFinancingSimulationRequest): Promise<SimulationOption[]>;
@@ -63,6 +72,14 @@ export class SimulationsClientImpl implements SimulationsClient {
     ApiRequestExecutor.ensureSuccess(response);
 
     return refinancingRangeToPublic(response.body as RangeRefinancingResponseWire);
+  }
+
+  async getCommissionReturns(storeCnpj: string): Promise<CommissionReturn[]> {
+    const path = new QueryStringBuilder().add('cnpjLoja', storeCnpj).build('v2/proposal/simulation/commission-returns');
+    const response = await this.executor.get(path);
+    ApiRequestExecutor.ensureSuccess(response);
+
+    return commissionReturnsToPublic(response.body as CommissionReturnsResponseWire);
   }
 
   async createFinancing(request: CreateFinancingSimulationRequest): Promise<SimulationOption[]> {

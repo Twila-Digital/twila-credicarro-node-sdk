@@ -108,6 +108,19 @@ for (const opcao of opcoes) console.log(`${opcao.term}x de ${opcao.installmentAm
 
 Para refinanciamento: `getRefinancingRange` e `createRefinancing({ cpf, licensePlate, requestedAmount, storeCnpj })`.
 
+**Retorno de comissão (opcional).** Consulte as faixas da loja e envie `commissionReturn` dentro da faixa da modalidade (`target` `Store`):
+
+```typescript
+import { CommissionReturnTarget, SimulationType } from '@twila/credicarro';
+
+const faixas = await client.simulations.getCommissionReturns(lojaCnpj); // [] se a loja não tiver retorno configurado
+const faixa = faixas.find((f) => f.type === SimulationType.Financing && f.target === CommissionReturnTarget.Store);
+
+const opcoes = await client.simulations.createFinancing({ ...simulacao, commissionReturn: faixa?.maximumReturn });
+```
+
+Fora da faixa, a API retorna `422 Store.CommissionReturn.OutOfRange`; sem faixa configurada, `422 Store.CommissionReturn.NotConfigured`. As rotas v1 não aceitam o campo.
+
 ### 3. Criar a proposta e acompanhar
 
 ```typescript
@@ -169,9 +182,9 @@ Para refinanciamento, a conta de recebimento: `client.proposals.sendDepositAccou
 | Cliente | Métodos |
 | --- | --- |
 | `client.customers` | `upsert`, `create`, `upsertAddress`, `upsertProfessionalData` |
-| `client.simulations` | `getFinancingRange`, `getRefinancingRange`, `createFinancing`, `createRefinancing`, `get`, `list` |
+| `client.simulations` | `getFinancingRange`, `getRefinancingRange`, `getCommissionReturns`, `createFinancing`, `createRefinancing`, `get`, `list` |
 | `client.proposals` | `create`, `get`, `list`, `sendVehicleDetails`, `sendDepositAccount`, `uploadDocument` |
-| `client.webhooks` | `create`, `list`, `update`, `delete` |
+| `client.webhooks` | `create`, `list`, `update`, `delete`, `listDeliveries`, `getDeliveryChart`, `resend` |
 | `client.v1.simulations` | `getFinancingRange(placa)`, `getRefinancingRange(placa)`, `createFinancing`, `createRefinancing` (rotas v1, sem `storeCnpj`) |
 | `client.v1.proposals` | `create`, `get` (rotas v1; `get` devolve `ProposalSummary`) |
 
@@ -187,7 +200,7 @@ if (proposta.status === ProposalStatus.Unknown) console.warn(`status novo: ${pro
 
 ## Paginação
 
-`simulations.list`, `proposals.list` e `webhooks.list` retornam `PagedResult<T>` (`items`, `page`, `pageSize`, `totalCount`, `hasNext`, `hasPrevious`) — sem auto-paginação; você controla o avanço de página. `page` começa em 1 e `pageSize` vai de 1 a 100 (validado no cliente, com `RangeError`).
+`simulations.list`, `proposals.list`, `webhooks.list` e `webhooks.listDeliveries` retornam `PagedResult<T>` (`items`, `page`, `pageSize`, `totalCount`, `hasNext`, `hasPrevious`) — sem auto-paginação; você controla o avanço de página. `page` começa em 1 e `pageSize` vai de 1 a 100 (validado no cliente, com `RangeError`).
 
 ```typescript
 const pagina = await client.proposals.list({ page: 1, pageSize: 20 });
@@ -256,6 +269,21 @@ const { webhookId, signingSecret } = await client.webhooks.create({
   credential: Buffer.from('usuario:senha').toString('base64'),
 });
 ```
+
+### Histórico, gráfico e reenvio
+
+```typescript
+// Envios que falharam na última semana (todos os filtros são opcionais)
+const falhas = await client.webhooks.listDeliveries({ initialDate: '2026-11-01', finalDate: '2026-11-07', statusCode: 500 });
+
+// Sucessos e erros por intervalo (período obrigatório, até 31 dias; rótulos no horário de Brasília)
+const grafico = await client.webhooks.getDeliveryChart({ initialDate: '2026-11-01', finalDate: '2026-11-07' });
+
+// Reenvia o mesmo corpo para a sua URL depois de corrigir a falha
+const { statusCode, response } = await client.webhooks.resend(falhas.items[0].id);
+```
+
+`resend` é uma única tentativa: o SDK **não** o repete automaticamente (repetir dispararia o webhook de novo) e espera até 30 s pela resposta. O reenvio chega com uma `Idempotency-Key` nova (`{id_mensagem}:{id_webhook}:{id_tentativa}`); para tratá-lo como a mesma notificação, deduplique pelo prefixo `{id_mensagem}:{id_webhook}`. `statusCode` vem `undefined` quando a sua URL não respondeu.
 
 Valide a notificação com o **corpo bruto** (antes de qualquer `JSON.parse`) e o header `X-CrediCarro-Signature`:
 

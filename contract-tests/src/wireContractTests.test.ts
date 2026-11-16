@@ -19,6 +19,7 @@ import {
   vehicleDetailsToWire,
 } from '../../src/internal/mapping/proposalMapper';
 import {
+  commissionReturnsToPublic,
   createFinancingRequestToWire,
   createRefinancingRequestToWire,
   financingRangeToPublic,
@@ -29,7 +30,11 @@ import {
 import {
   createWebhookRequestToWire,
   createWebhookResultToPublic,
+  addWebhookDeliveryFilter,
   updateWebhookRequestToWire,
+  webhookDeliveryChartPointToPublic,
+  webhookDeliveryToPublic,
+  webhookResendResultToPublic,
   webhookToPublic,
 } from '../../src/internal/mapping/webhookMapper';
 import { DepositAccountType, DocumentType, ProposalParticipant } from '../../src/proposals/enums';
@@ -61,6 +66,7 @@ const SDK_OPERATIONS: [Method, string][] = [
   ['post', '/v1/customer/professional'],
   ['get', '/v2/proposal/simulation/range/financing'],
   ['get', '/v2/proposal/simulation/range/refinancing'],
+  ['get', '/v2/proposal/simulation/commission-returns'],
   ['post', '/v2/proposal/simulation/financing'],
   ['post', '/v2/proposal/simulation/refinancing'],
   ['get', '/v1/proposal/simulation/{simulacaoId}'],
@@ -81,6 +87,9 @@ const SDK_OPERATIONS: [Method, string][] = [
   ['get', '/v1/webhook'],
   ['put', '/v1/webhook/{webhookId}'],
   ['delete', '/v1/webhook/{webhookId}'],
+  ['get', '/v1/webhook/audit'],
+  ['get', '/v1/webhook/audit/chart'],
+  ['post', '/v1/webhook/audit/{auditWebhookId}/resend'],
 ];
 
 const personal = {
@@ -140,8 +149,8 @@ describe('contrato contra o openapi.yaml público', () => {
 
 describe('wire types de requisição só usam propriedades do schema e cobrem os campos obrigatórios', () => {
   const store = '11.222.333/0001-81';
-  const financing = { cpf: '12345678909', licensePlate: 'ABC1D23', vehicleAmount: 45000, downPayment: 5000, state: 'SP', isZeroKm: false, storeCnpj: store };
-  const refinancing = { cpf: '12345678909', licensePlate: 'ABC1D23', requestedAmount: 25000, storeCnpj: store };
+  const financing = { cpf: '12345678909', licensePlate: 'ABC1D23', vehicleAmount: 45000, downPayment: 5000, state: 'SP', isZeroKm: false, storeCnpj: store, commissionReturn: 2 };
+  const refinancing = { cpf: '12345678909', licensePlate: 'ABC1D23', requestedAmount: 25000, storeCnpj: store, commissionReturn: 2 };
   const proposal = { cpf: '12345678909', simulationId: '123e4567-e89b-12d3-a456-426614174000' };
   const file = documentFileFromBytes(Buffer.from('%PDF-1.7'), 'cnh.pdf');
 
@@ -272,6 +281,30 @@ describe('wire types de requisição só usam propriedades do schema e cobrem os
     for (const path of ['/v1/proposal/simulation/range/financing', '/v1/proposal/simulation/range/refinancing']) {
       expect(queryParameterNames(document, operation('get', path))).toEqual(['placa']);
     }
+
+    expect(queryParameterNames(document, operation('get', '/v2/proposal/simulation/commission-returns'))).toEqual(['cnpjLoja']);
+
+    const filter = new URL(
+      addWebhookDeliveryFilter(new QueryStringBuilder(), {
+        initialDate: '2026-11-01',
+        finalDate: '2026-11-05',
+        proposalId: 'p',
+        simulationId: 's',
+        proposalNumber: 'n',
+        statusCode: 200,
+      }).build('r'),
+      'https://x/',
+    ).searchParams;
+    expect(queryParameterNames(document, operation('get', '/v1/webhook/audit'))).toEqual(
+      expect.arrayContaining([...filter.keys(), ...list.keys()]),
+    );
+    expect(queryParameterNames(document, operation('get', '/v1/webhook/audit/chart'))).toEqual(expect.arrayContaining([...filter.keys()]));
+  });
+
+  it('o reenvio de webhook não tem corpo nem Idempotency-Key', () => {
+    const resend = operation('post', '/v1/webhook/audit/{auditWebhookId}/resend') as { requestBody?: unknown };
+    expect(resend.requestBody).toBeUndefined();
+    expect(headerParameterNames(document, resend as Operation)).not.toContain('Idempotency-Key');
   });
 });
 
@@ -324,8 +357,22 @@ describe('os mappers de resposta só leem propriedades presentes no schema', () 
     readsOnlySchemaProperties(itemSchema('get', '/v1/webhook'), webhookToPublic);
   });
 
+  it('webhooks: histórico, gráfico e reenvio', () => {
+    readsOnlySchemaProperties(itemSchema('get', '/v1/webhook/audit'), webhookDeliveryToPublic);
+    const chart = responseSchemaOf(document, operation('get', '/v1/webhook/audit/chart'), '200');
+    readsOnlySchemaProperties(resolveSchema(document, chart.items), webhookDeliveryChartPointToPublic);
+    readsOnlySchemaProperties(
+      responseSchemaOf(document, operation('post', '/v1/webhook/audit/{auditWebhookId}/resend'), '200'),
+      webhookResendResultToPublic,
+    );
+  });
+
+  it('GET v2 commission-returns', () => {
+    readsOnlySchemaProperties(responseSchemaOf(document, operation('get', '/v2/proposal/simulation/commission-returns'), '200'), commissionReturnsToPublic);
+  });
+
   it('paginação (itens + pagina)', () => {
-    for (const path of ['/v1/proposal', '/v1/proposal/simulation', '/v1/webhook']) {
+    for (const path of ['/v1/proposal', '/v1/proposal/simulation', '/v1/webhook', '/v1/webhook/audit']) {
       readsOnlySchemaProperties(responseSchemaOf(document, operation('get', path), '200'), (wire: never) => pagedToPublic(wire, (item) => item));
     }
   });
